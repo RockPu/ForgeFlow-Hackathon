@@ -1,0 +1,40 @@
+Please update the existing ForgeFlow application by adding a **static workflow diagram to the Dashboard only**.
+
+First inspect the existing project and locate the current Dashboard component. Make the smallest focused change needed. Preserve the existing design, layout, navigation, data, and behavior.
+
+### Workflow to show
+
+1. **Sales — Create Order**
+   - Sales receives a customer order.
+   - Sales creates the order, provides the required materials and order information, and submits it to the manager.
+
+2. **Manager — Feasibility and Risk Review**
+   - The manager confirms order feasibility with the factory.
+   - The manager reviews AI-assisted customer risk information.
+   - Show a decision branch:
+     - **Rejected** → end at a “Rejected” state.
+     - **Approved** → continue to factory scheduling.
+
+3. **Factory — Schedule and Produce**
+   - The factory schedules production.
+   - Production-stage data is recorded at each major stage.
+   - When production is complete, hand the order to logistics.
+
+4. **Logistics — Label and Ship**
+   - Logistics labels and ships the products.
+
+5. **Customer — Delivery**
+   - The customer receives the products.
+
+Show a clear visual note spanning the workflow: **“Order and product status is visible to all users throughout the process.”**
+
+### Scope and constraints
+
+- This is a **visualization only**. Do not add or change workflows, buttons, forms, permissions, APIs, database tables, authentication, AI integrations, or business logic.
+- Do not make the diagram interactive. The AI risk review is a labeled process step only; do not call an AI service or imply that a new AI integration was implemented.
+- Do not invent additional approval rules or rejection behavior.
+- Reuse the app’s existing styles, components, and icon library if available. Do not add dependencies.
+- Keep the existing Dashboard content and functionality intact. Do not redesign or rewrite the whole page.
+- Make the diagram easy to scan, with connected stages, arrows, and a clearly visible approve/reject branch. Ensure it is responsive on desktop and mobile and readable with the app’s existing theme.
+
+After implementing it, briefly report which file(s) you changed and confirm that the change is limited to the Dashboard visualization.

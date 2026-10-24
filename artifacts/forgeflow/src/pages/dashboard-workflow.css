@@ -1,0 +1,78 @@
+.ff-dashboard-workflow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  padding-bottom: 1rem;
+}
+
+.ff-dashboard-workflow .ff-workflow-stage {
+  position: relative;
+  min-width: 0;
+}
+
+.ff-dashboard-workflow .ff-workflow-card {
+  height: 100%;
+  padding: 1rem;
+  border: 1px solid hsl(var(--border));
+  border-top: 3px solid hsl(var(--primary));
+  border-radius: var(--radius);
+  background: hsl(var(--card));
+}
+
+.ff-dashboard-workflow .ff-workflow-connector {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  color: hsl(var(--muted-foreground));
+}
+
+.ff-dashboard-workflow .ff-workflow-connector svg {
+  transform: rotate(90deg);
+}
+
+.ff-dashboard-workflow .ff-workflow-approved {
+  width: 50%;
+  min-height: 112px;
+  color: hsl(var(--foreground));
+}
+
+.ff-dashboard-workflow .ff-workflow-rejected {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 45%;
+}
+
+.ff-dashboard-workflow .ff-workflow-rejection-line {
+  height: 16px;
+  width: 1px;
+  margin: 0 auto;
+  background: hsl(var(--destructive));
+}
+
+@media (min-width: 1280px) {
+  .ff-dashboard-workflow {
+    grid-template-columns: minmax(0, 1fr) 30px minmax(0, 1.25fr) 72px minmax(0, 1.2fr) 30px minmax(0, 1fr) 30px minmax(0, 1fr);
+    padding-bottom: 108px;
+  }
+
+  .ff-dashboard-workflow .ff-workflow-card {
+    padding: 0.875rem;
+  }
+
+  .ff-dashboard-workflow .ff-workflow-connector svg {
+    transform: none;
+  }
+
+  .ff-dashboard-workflow .ff-workflow-approved {
+    width: auto;
+    min-height: 0;
+  }
+
+  .ff-dashboard-workflow .ff-workflow-rejected {
+    left: 0;
+    width: 100%;
+  }
+}

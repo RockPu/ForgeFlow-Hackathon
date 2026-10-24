@@ -1,0 +1,157 @@
+Build a functional, demo-ready web application for a factory order, production, and product traceability management system. The app should support this workflow:
+
+**Sales Order → Manager Review → Order Creation → Inventory Check → Shipment or Production → Quality Checks → Dispatch**
+
+## 1. User Roles and Permissions
+
+Create role-based access for:
+
+- **Sales**: Submit customer orders and track their status.
+- **Manager**: Review risk information, approve or reject orders, and create official orders.
+- **Factory Operator**: Check inventory, update production stages, record inspections, and prepare dispatches.
+
+All authenticated users can view production progress and traceability records. Only Managers can approve or reject sales orders and create official orders. Factory Operators can update factory and production information but cannot approve customer orders. Sales users can view and track their own orders.
+
+## 2. Sales Order Submission
+
+Provide a sales order form with the required information:
+
+- Customer company name
+- Customer contact details
+- Products and quantities
+- Unit price and total amount
+- Requested delivery date
+- Delivery address
+- Notes or supporting documents
+
+Validate required fields and show clear confirmation after submission. New submissions should enter a **Pending Manager Review** state.
+
+## 3. AI-Assisted Customer Risk Review
+
+Before a Manager makes a decision, provide an AI-assisted customer background and credit-risk review. The review should summarize available information, such as:
+
+- Possible overdue payments or outstanding debts
+- Potential business or payment risks
+- Relevant supporting evidence or data sources
+- A risk level: **Low**, **Medium**, or **High**
+- A confidence indicator and a short explanation
+
+The AI review is advisory only. It must not approve or reject orders automatically. The Manager makes the final decision.
+
+If no real customer-data or AI service is connected, use clearly labeled sample/demo results. Do not present mock data as verified real-world research. Provide a field for the Manager to add review notes.
+
+## 4. Manager Review and Official Order Creation
+
+Create a Manager dashboard showing submitted orders, customer risk summaries, amounts, requested delivery dates, and current status.
+
+Managers can:
+
+- Approve or reject an order
+- Add a decision note
+- Review the risk assessment and its evidence
+- Create an official order after approval
+
+A rejected order must remain **Rejected** and must never appear as approved due to a later UI update or status refresh. Record who made the decision and when. Do not allow an order to proceed to factory processing before it is approved and officially created.
+
+## 5. Factory Inventory and Fulfillment Workflow
+
+After official order creation, send the order to the factory queue.
+
+The factory workflow should be:
+
+1. Check finished-goods inventory.
+2. If enough finished goods are available, reserve the required quantity and prepare shipment.
+3. If finished-goods inventory is insufficient, check raw-material availability.
+4. If raw materials are insufficient, create a procurement task and mark the order as **Waiting for Materials**.
+5. If raw materials are available, schedule production and mark the order as **Scheduled for Production**.
+6. After production, complete quality checks and mark products as ready for dispatch.
+7. Record shipping and tracking information when the order is dispatched.
+
+Show clear status transitions and timestamps. Prevent invalid transitions, such as dispatching an order before the required inventory or production steps are complete.
+
+## 6. Production Stages and Quality Records
+
+Allow the factory to configure or use a set of production stages, for example:
+
+- Material Preparation
+- Processing
+- Assembly
+- Quality Inspection
+- Packaging
+- Ready for Dispatch
+
+For each stage, Factory Operators can record:
+
+- Stage status: **Not Started**, **In Progress**, **Passed**, or **Failed**
+- Start and completion time
+- Operator or inspector name
+- Quantity processed
+- Inspection measurements or checklist results
+- Notes and issue details
+- Photos or supporting documents, if file uploads are supported
+
+A failed inspection should create a visible issue and prevent the affected product or batch from being marked ready for dispatch until the issue is resolved and re-inspected.
+
+## 7. Product-Level Traceability
+
+Assign a unique serial number or traceability ID to every individual product. If individual product tracking is not practical for a large order, support batch IDs as well.
+
+Each traceability record should connect the product or batch to:
+
+- The official order
+- The customer
+- The product and production quantity
+- Every production stage
+- Inspection results
+- Operator and inspector details
+- Relevant timestamps
+- Shipment and tracking information
+
+Provide a searchable traceability page. Users should be able to search by order number, product serial number, batch ID, or customer name and view the full history.
+
+## 8. Sales Order Tracking
+
+Give Sales users an order dashboard where they can track orders from submission through review, factory processing, production, and shipment.
+
+Show:
+
+- Current order status
+- Approval or rejection result and decision note
+- Inventory or material status
+- Current production stage and overall progress
+- Completed and pending inspections
+- Expected dispatch date, if available
+- Shipment carrier and tracking number, once dispatched
+
+Update progress when a Manager or Factory Operator records a change. Clearly distinguish confirmed information from estimates.
+
+## 9. Dashboard and User Experience
+
+Create a clean, responsive interface suitable for desktop and mobile use. Use **English for all interface text**, including navigation, buttons, status labels, validation messages, charts, and sample data.
+
+Include dashboards appropriate to each role:
+
+- Sales: submitted orders and order progress
+- Manager: pending reviews, risk summaries, order values, and decisions
+- Factory Operator: inventory checks, material shortages, scheduled production, inspections, and dispatch tasks
+
+Use clear status badges, a production progress timeline, search and filtering, and helpful empty states. Keep the workflow easy to understand for users who are not technical.
+
+## 10. Data Integrity, Audit History, and Demo Setup
+
+Maintain an audit history for important actions, including order submission, approval or rejection, official order creation, inventory updates, production-stage updates, inspection results, and dispatch.
+
+For each audit event, record the user, action, timestamp, and relevant before-and-after status where applicable. Preserve historical records rather than silently overwriting them.
+
+Build this as a working application in Replit. Use persistent storage if available. If the project is implemented as a front-end-only demo, clearly label demo data and use local persistence so that refreshing the page does not immediately erase the demonstration state.
+
+Seed the app with realistic sample users, customers, products, inventory, and orders so the complete workflow can be demonstrated. Include at least one example of each of these cases:
+
+- An order awaiting Manager review
+- An order rejected by a Manager
+- An approved order fulfilled from finished-goods inventory
+- An order waiting for raw materials
+- An order in production with inspection records
+- A completed and dispatched order with traceability information
+
+Prioritize a reliable end-to-end demonstration of the workflow, correct permissions, accurate status transitions, and complete traceability records.

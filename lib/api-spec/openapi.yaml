@@ -1,0 +1,474 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+paths:
+  /factory/session:
+    get:
+      operationId: factorySession
+      responses:
+        "200":
+          description: Current authenticated session or signed out
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FactorySession" }
+  /factory/login:
+    post:
+      operationId: factoryLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/FactoryCredentials" }
+      responses:
+        "200":
+          description: Signed in
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FactorySession" }
+  /factory/logout:
+    post:
+      operationId: factoryLogout
+      responses:
+        "200":
+          description: Signed out
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FactoryMessage" }
+  /factory/catalog:
+    get:
+      operationId: factoryCatalog
+      responses:
+        "200":
+          description: Products and authenticated demo guidance
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FactoryCatalog" }
+  /factory/dashboard:
+    get:
+      operationId: factoryDashboard
+      responses:
+        "200":
+          description: Role scoped counts and activity
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FactoryDashboard" }
+  /factory/orders:
+    get:
+      operationId: factoryOrders
+      parameters:
+        - { name: search, in: query, schema: { type: string, maxLength: 200 } }
+        - { name: status, in: query, schema: { type: string, maxLength: 80 } }
+      responses:
+        "200":
+          description: Own commercial orders for Sales, all for Manager, safe official orders for Operator
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/FactoryOrder" }
+    post:
+      operationId: factorySubmitOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/FactoryOrderInput" }
+      responses:
+        "201":
+          description: Pending Manager Review
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FactoryOrder" }
+  /factory/orders/{id}:
+    get:
+      operationId: factoryOrder
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Scoped order detail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FactoryOrder" }
+  /factory/orders/{id}/commands:
+    post:
+      operationId: factoryCommand
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/FactoryCommandInput" }
+      responses:
+        "200":
+          description: Committed state; stale versions or invalid transitions return 409
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FactoryOrder" }
+  /factory/production:
+    get:
+      operationId: factoryProduction
+      responses:
+        "200":
+          description: Shared safe progress, no commercial fields
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/FactoryOrder" }
+  /factory/inventory:
+    get:
+      operationId: factoryInventory
+      responses:
+        "200":
+          description: Operator inventory and material availability
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FactoryInventory" }
+  /factory/traceability:
+    get:
+      operationId: factoryTraceability
+      parameters:
+        - { name: search, in: query, schema: { type: string, maxLength: 200 } }
+      responses:
+        "200":
+          description: Safe searchable official order histories
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/FactoryOrder" }
+  /factory/orders/{id}/audit:
+    get:
+      operationId: factoryAudit
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Commercial audit restricted to Manager and submitting Sales
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/FactoryAuditEvent" }
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+components:
+  schemas:
+    FactoryMessage:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+    FactoryCredentials:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, minLength: 3, maxLength: 200 }
+        password: { type: string, minLength: 1, maxLength: 200 }
+    FactoryUser:
+      type: object
+      required: [id, name, email, role]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string }
+        role: { type: string, enum: [Sales, Manager, Factory Operator] }
+    FactorySession:
+      type: object
+      required: [user, csrfToken]
+      properties:
+        user:
+          oneOf:
+            - { $ref: "#/components/schemas/FactoryUser" }
+            - { type: "null" }
+        csrfToken: { type: string }
+    FactoryProduct:
+      type: object
+      required: [id, name, sku, requirements]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        sku: { type: string }
+        unitPrice: { type: number }
+        requirements:
+          type: array
+          items: { $ref: "#/components/schemas/FactoryRequirement" }
+    FactoryRequirement:
+      type: object
+      required: [materialId, quantity]
+      properties:
+        materialId: { type: string }
+        quantity: { type: integer }
+    FactoryCatalog:
+      type: object
+      required: [products, stages, policy]
+      properties:
+        products:
+          type: array
+          items: { $ref: "#/components/schemas/FactoryProduct" }
+        stages:
+          type: array
+          items: { type: string }
+        policy: { type: string }
+    FactoryLineInput:
+      type: object
+      required: [productId, quantity, unitPrice]
+      properties:
+        productId: { type: string, minLength: 1 }
+        quantity: { type: integer, minimum: 1, maximum: 10000 }
+        unitPrice: { type: number, minimum: 0.01, maximum: 1000000, multipleOf: 0.01 }
+    FactoryOrderInput:
+      type: object
+      required: [company, contact, deliveryDate, address, lines]
+      properties:
+        company: { type: string, minLength: 2, maxLength: 200 }
+        contact: { type: string, minLength: 5, maxLength: 300 }
+        deliveryDate: { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' }
+        address: { type: string, minLength: 5, maxLength: 1000 }
+        notes: { type: string, maxLength: 2000 }
+        lines:
+          type: array
+          minItems: 1
+          maxItems: 30
+          items: { $ref: "#/components/schemas/FactoryLineInput" }
+    FactoryLine:
+      type: object
+      required: [id, productId, productName, quantity]
+      properties:
+        id: { type: string }
+        productId: { type: string }
+        productName: { type: string }
+        quantity: { type: integer }
+        unitPrice: { type: number }
+        total: { type: number }
+    FactoryRisk:
+      type: object
+      required: [level, confidence, explanation, evidence, label]
+      properties:
+        level: { type: string, enum: [Low, Medium, High] }
+        confidence: { type: integer }
+        explanation: { type: string }
+        evidence:
+          type: array
+          items: { type: string }
+        label: { type: string }
+    FactoryStage:
+      type: object
+      required: [index, name, status, attempts]
+      properties:
+        index: { type: integer }
+        name: { type: string }
+        status: { type: string, enum: [Not Started, In Progress, Passed, Failed] }
+        attempts:
+          type: array
+          items: { $ref: "#/components/schemas/FactoryAttempt" }
+    FactoryAttempt:
+      type: object
+      required: [id, status, actor, startedAt, quantity, measurements, notes]
+      properties:
+        id: { type: string }
+        status: { type: string }
+        actor: { type: string }
+        startedAt: { type: string }
+        completedAt: { type: string }
+        quantity: { type: integer }
+        measurements: { type: string }
+        notes: { type: string }
+    FactoryIssue:
+      type: object
+      required: [id, stageIndex, notes, createdAt, actor]
+      properties:
+        id: { type: string }
+        stageIndex: { type: integer }
+        notes: { type: string }
+        createdAt: { type: string }
+        actor: { type: string }
+        resolution: { type: string }
+        resolvedAt: { type: string }
+        resolvedBy: { type: string }
+    FactoryAllocation:
+      type: object
+      required: [id, lineId, productId, productName, batchId, quantity, source, released, history]
+      properties:
+        id: { type: string }
+        lineId: { type: string }
+        productId: { type: string }
+        productName: { type: string }
+        batchId: { type: string }
+        serialNumbers:
+          type: array
+          description: Individual serials for small production runs; larger runs use the explicit quantity-bearing batch ID.
+          items: { type: string }
+        quantity: { type: integer }
+        source: { type: string, enum: [Finished Stock, Production] }
+        released: { type: boolean }
+        history:
+          type: array
+          items: { $ref: "#/components/schemas/FactoryAttempt" }
+    FactoryProcurement:
+      type: object
+      required: [id, materialId, materialName, quantity, received, status]
+      properties:
+        id: { type: string }
+        materialId: { type: string }
+        materialName: { type: string }
+        quantity: { type: integer }
+        received: { type: integer }
+        status: { type: string }
+    FactoryShipment:
+      type: object
+      required: [carrier, tracking, dispatchedAt, actor]
+      properties:
+        carrier: { type: string }
+        tracking: { type: string }
+        dispatchedAt: { type: string }
+        actor: { type: string }
+    FactoryOrder:
+      type: object
+      required: [id, number, company, deliveryDate, decision, status, version, createdAt, lines, stages, issues, allocations, procurement, progress]
+      properties:
+        id: { type: string }
+        number: { type: string }
+        officialNumber: { type: string }
+        company: { type: string }
+        contact: { type: string }
+        address: { type: string }
+        notes: { type: string }
+        salesName: { type: string }
+        deliveryDate: { type: string }
+        decision: { type: string, enum: [Pending Manager Review, Approved, Rejected] }
+        decisionNote: { type: string }
+        reviewNotes: { type: string }
+        decidedBy: { type: string }
+        decidedAt: { type: string }
+        officialCreatedBy: { type: string }
+        officialCreatedAt: { type: string }
+        total: { type: number }
+        risk: { $ref: "#/components/schemas/FactoryRisk" }
+        status: { type: string }
+        version: { type: integer }
+        createdAt: { type: string }
+        expectedDispatch: { type: string }
+        progress: { type: integer }
+        lines:
+          type: array
+          items: { $ref: "#/components/schemas/FactoryLine" }
+        stages:
+          type: array
+          items: { $ref: "#/components/schemas/FactoryStage" }
+        issues:
+          type: array
+          items: { $ref: "#/components/schemas/FactoryIssue" }
+        allocations:
+          type: array
+          items: { $ref: "#/components/schemas/FactoryAllocation" }
+        procurement:
+          type: array
+          items: { $ref: "#/components/schemas/FactoryProcurement" }
+        shipment: { $ref: "#/components/schemas/FactoryShipment" }
+    FactoryCommandInput:
+      type: object
+      required: [action, version]
+      properties:
+        action: { type: string, enum: [approve, reject, official, check-inventory, receive-material, stage, resolve-issue, release-stock, dispatch] }
+        version: { type: integer, minimum: 0 }
+        notes: { type: string, maxLength: 2000 }
+        reviewNotes: { type: string, maxLength: 2000 }
+        stageIndex: { type: integer, minimum: 0, maximum: 5 }
+        status: { type: string, enum: [In Progress, Passed, Failed] }
+        quantity: { type: integer, minimum: 1, maximum: 300000 }
+        measurements: { type: string, maxLength: 2000 }
+        issueId: { type: string }
+        procurementId: { type: string }
+        carrier: { type: string, maxLength: 200 }
+        tracking: { type: string, maxLength: 200 }
+    FactoryMaterial:
+      type: object
+      required: [id, name, unit, available]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        unit: { type: string }
+        available: { type: integer }
+    FactoryStock:
+      type: object
+      required: [batchId, productId, productName, available, quality]
+      properties:
+        batchId: { type: string }
+        productId: { type: string }
+        productName: { type: string }
+        available: { type: integer }
+        quality: { type: string }
+    FactoryInventory:
+      type: object
+      required: [materials, stock, policy]
+      properties:
+        materials:
+          type: array
+          items: { $ref: "#/components/schemas/FactoryMaterial" }
+        stock:
+          type: array
+          items: { $ref: "#/components/schemas/FactoryStock" }
+        policy: { type: string }
+    FactoryAuditEvent:
+      type: object
+      required: [id, orderId, actor, action, at, before, after]
+      properties:
+        id: { type: string }
+        orderId: { type: string }
+        actor: { type: string }
+        action: { type: string }
+        at: { type: string }
+        before: { type: object, additionalProperties: true }
+        after: { type: object, additionalProperties: true }
+    FactoryDashboard:
+      type: object
+      required: [total, pending, active, blocked, dispatched, recent]
+      properties:
+        total: { type: integer }
+        pending: { type: integer }
+        active: { type: integer }
+        blocked: { type: integer }
+        dispatched: { type: integer }
+        recent:
+          type: array
+          items: { $ref: "#/components/schemas/FactoryActivity" }
+    FactoryActivity:
+      type: object
+      required: [orderId, number, company, status, at]
+      properties:
+        orderId: { type: string }
+        number: { type: string }
+        company: { type: string }
+        status: { type: string }
+        at: { type: string }
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+

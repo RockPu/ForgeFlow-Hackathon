@@ -1,0 +1,24 @@
+{
+  "name": "forgeflow-local",
+  "version": "0.0.0",
+  "license": "Apache-2.0",
+  "scripts": {
+    "setup:local": "node tools/local.mjs setup",
+    "dev": "node tools/local.mjs dev",
+    "build": "node tools/local.mjs build",
+    "start": "node tools/local.mjs start",
+    "test": "node tools/local.mjs test",
+    "typecheck:libs": "tsc --build",
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
+  },
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.26.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.6",
+    "typescript": "~5.9.3"
+  }
+}
